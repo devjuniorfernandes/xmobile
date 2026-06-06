@@ -17,6 +17,7 @@ abstract class Project with _$Project {
     ProjectCompany? empresa,
     @JsonKey(fromJson: _responsibleFromJson) ProjectResponsible? responsavel,
     ProjectMetrics? metricas,
+    List<ProjectReference>? referencias,
   }) = _Project;
 
   factory Project.fromJson(Map<String, dynamic> json) =>
@@ -80,4 +81,18 @@ abstract class ProjectMetrics with _$ProjectMetrics {
 
   factory ProjectMetrics.fromJson(Map<String, dynamic> json) =>
       _$ProjectMetricsFromJson(json);
+}
+
+@freezed
+abstract class ProjectReference with _$ProjectReference {
+  const factory ProjectReference({
+    required int id,
+    required String titulo,
+    required String tipo,
+    required String url,
+    String? descricao,
+  }) = _ProjectReference;
+
+  factory ProjectReference.fromJson(Map<String, dynamic> json) =>
+      _$ProjectReferenceFromJson(json);
 }

@@ -12,11 +12,11 @@ class TasksState {
     this.isLoadingMore = false,
     this.error,
     this.search = '',
-    this.status,
-    this.prioridade,
-    this.departamento,
-    this.projeto,
-    this.responsavel,
+    this.statusId,
+    this.prioridadeId,
+    this.departamentoId,
+    this.projetoId,
+    this.responsavelId,
   });
 
   final List<TaskItem> items;
@@ -26,11 +26,11 @@ class TasksState {
   final bool isLoadingMore;
   final String? error;
   final String search;
-  final String? status;
-  final String? prioridade;
-  final String? departamento;
-  final String? projeto;
-  final String? responsavel;
+  final int? statusId;
+  final int? prioridadeId;
+  final int? departamentoId;
+  final int? projetoId;
+  final int? responsavelId;
 
   TasksState copyWith({
     List<TaskItem>? items,
@@ -40,11 +40,11 @@ class TasksState {
     bool? isLoadingMore,
     String? error,
     String? search,
-    String? status,
-    String? prioridade,
-    String? departamento,
-    String? projeto,
-    String? responsavel,
+    int? statusId,
+    int? prioridadeId,
+    int? departamentoId,
+    int? projetoId,
+    int? responsavelId,
   }) {
     return TasksState(
       items: items ?? this.items,
@@ -54,25 +54,24 @@ class TasksState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       error: error,
       search: search ?? this.search,
-      status: status ?? this.status,
-      prioridade: prioridade ?? this.prioridade,
-      departamento: departamento ?? this.departamento,
-      projeto: projeto ?? this.projeto,
-      responsavel: responsavel ?? this.responsavel,
+      statusId: statusId ?? this.statusId,
+      prioridadeId: prioridadeId ?? this.prioridadeId,
+      departamentoId: departamentoId ?? this.departamentoId,
+      projetoId: projetoId ?? this.projetoId,
+      responsavelId: responsavelId ?? this.responsavelId,
     );
   }
 
   bool get hasFilters =>
-      (status?.isNotEmpty ?? false) ||
-      (prioridade?.isNotEmpty ?? false) ||
-      (departamento?.isNotEmpty ?? false) ||
-      (projeto?.isNotEmpty ?? false) ||
-      (responsavel?.isNotEmpty ?? false);
+      statusId != null ||
+      prioridadeId != null ||
+      departamentoId != null ||
+      projetoId != null ||
+      responsavelId != null;
 }
 
-final tasksControllerProvider = NotifierProvider<TasksController, TasksState>(
-  TasksController.new,
-);
+final tasksControllerProvider =
+    NotifierProvider<TasksController, TasksState>(TasksController.new);
 
 class TasksController extends Notifier<TasksState> {
   late final TasksRepository _repository;
@@ -89,12 +88,12 @@ class TasksController extends Notifier<TasksState> {
     try {
       final response = await _repository.getTasks(
         page: 1,
-        search: state.search,
-        status: state.status,
-        prioridade: state.prioridade,
-        departamento: state.departamento,
-        projeto: state.projeto,
-        responsavel: state.responsavel,
+        q: state.search,
+        statusId: state.statusId,
+        prioridadeId: state.prioridadeId,
+        departamentoId: state.departamentoId,
+        projetoId: state.projetoId,
+        responsavelId: state.responsavelId,
       );
       state = state.copyWith(
         items: response.items,
@@ -113,12 +112,12 @@ class TasksController extends Notifier<TasksState> {
     try {
       final response = await _repository.getTasks(
         page: state.page + 1,
-        search: state.search,
-        status: state.status,
-        prioridade: state.prioridade,
-        departamento: state.departamento,
-        projeto: state.projeto,
-        responsavel: state.responsavel,
+        q: state.search,
+        statusId: state.statusId,
+        prioridadeId: state.prioridadeId,
+        departamentoId: state.departamentoId,
+        projetoId: state.projetoId,
+        responsavelId: state.responsavelId,
       );
       state = state.copyWith(
         items: [...state.items, ...response.items],
@@ -136,41 +135,25 @@ class TasksController extends Notifier<TasksState> {
     refresh();
   }
 
-  void setStatus(String? value) {
-    state = TasksState(
-      items: state.items,
-      search: state.search,
-      status: value,
-      prioridade: state.prioridade,
-      departamento: state.departamento,
-      projeto: state.projeto,
-      responsavel: state.responsavel,
-    );
+  void setStatusId(int? value) {
+    state = state.copyWith(statusId: value);
     refresh();
   }
 
-  void setPrioridade(String? value) {
-    state = TasksState(
-      items: state.items,
-      search: state.search,
-      status: state.status,
-      prioridade: value,
-      departamento: state.departamento,
-      projeto: state.projeto,
-      responsavel: state.responsavel,
-    );
+  void setPrioridadeId(int? value) {
+    state = state.copyWith(prioridadeId: value);
     refresh();
   }
 
   void applyAdvancedFilters({
-    String? departamento,
-    String? projeto,
-    String? responsavel,
+    int? departamentoId,
+    int? projetoId,
+    int? responsavelId,
   }) {
     state = state.copyWith(
-      departamento: departamento,
-      projeto: projeto,
-      responsavel: responsavel,
+      departamentoId: departamentoId,
+      projetoId: projetoId,
+      responsavelId: responsavelId,
     );
     refresh();
   }
@@ -180,19 +163,68 @@ class TasksController extends Notifier<TasksState> {
     refresh();
   }
 
+  Future<TaskItem> createTask({
+    required String titulo,
+    required String descricao,
+    required int departamentoId,
+    required int prioridadeId,
+    int? projetoId,
+    int? usuarioId,
+    int? statusId,
+    String? dataPrazo,
+    String? dataConclusao,
+  }) async {
+    final created = await _repository.createTask(
+      titulo: titulo,
+      descricao: descricao,
+      departamentoId: departamentoId,
+      prioridadeId: prioridadeId,
+      projetoId: projetoId,
+      usuarioId: usuarioId,
+      statusId: statusId,
+      dataPrazo: dataPrazo,
+      dataConclusao: dataConclusao,
+    );
+    state = state.copyWith(
+      items: [created, ...state.items],
+    );
+    return created;
+  }
+
   Future<TaskItem> updateTask({
     required int id,
-    String? status,
-    int? responsavelId,
+    required String titulo,
+    required String descricao,
+    required int departamentoId,
+    required int prioridadeId,
+    int? projetoId,
+    int? usuarioId,
+    int? statusId,
+    String? dataPrazo,
+    String? dataConclusao,
   }) async {
     final updated = await _repository.updateTask(
       id: id,
-      status: status,
-      responsavelId: responsavelId,
+      titulo: titulo,
+      descricao: descricao,
+      departamentoId: departamentoId,
+      prioridadeId: prioridadeId,
+      projetoId: projetoId,
+      usuarioId: usuarioId,
+      statusId: statusId,
+      dataPrazo: dataPrazo,
+      dataConclusao: dataConclusao,
     );
     state = state.copyWith(
       items: state.items.map((task) => task.id == id ? updated : task).toList(),
     );
     return updated;
+  }
+
+  Future<void> deleteTask(int id) async {
+    await _repository.deleteTask(id);
+    state = state.copyWith(
+      items: state.items.where((task) => task.id != id).toList(),
+    );
   }
 }

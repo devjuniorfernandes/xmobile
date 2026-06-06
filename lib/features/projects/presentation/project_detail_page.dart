@@ -7,8 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/metric_card.dart';
 import '../../../data/models/project_model.dart';
+import '../../auth/auth_controller.dart';
 import '../../tasks/presentation/task_card.dart';
-import '../../tasks/presentation/tasks_controller.dart';
+import 'project_form_sheet.dart';
 import 'project_tasks_provider.dart';
 import 'projects_controller.dart';
 
@@ -41,6 +42,11 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       )),
     );
 
+    final auth = ref.watch(authControllerProvider);
+    final userRole = auth.user?.usuario?.cargo?.nome.toLowerCase() ?? '';
+    final isAdmin = auth.user?.isAdmin ?? false;
+    final isCoordenador = userRole.contains('coordenad') || isAdmin;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -55,6 +61,18 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
           ),
         ),
         actions: [
+          if (isCoordenador)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.ink,
+                child: IconButton(
+                  onPressed: _saving ? null : _handleDelete,
+                  icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+                ),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: CircleAvatar(
@@ -220,6 +238,40 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
                     ),
                   ],
                 ),
+                if (_project.referencias != null && _project.referencias!.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    'Referências do Projeto',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 12),
+                  ..._project.referencias!.map(
+                    (refItem) => Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: Icon(
+                          refItem.tipo.toLowerCase() == 'link'
+                              ? Icons.link
+                              : Icons.description_outlined,
+                          color: AppColors.pantone2955C,
+                        ),
+                        title: Text(refItem.titulo),
+                        subtitle: refItem.descricao != null
+                            ? Text(refItem.descricao!)
+                            : null,
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Abrir URL: ${refItem.url}')),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Text(
                   'Tarefas Relacionadas',
@@ -289,143 +341,91 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
   }
 
   Future<void> _showEditSheet() async {
-    final statusController = TextEditingController(
-      text: _project.statusProjeto ?? '',
-    );
-    final responsibleController = TextEditingController(
-      text: _project.responsavel?.id == 0
-          ? ''
-          : _project.responsavel?.id.toString() ?? '',
-    );
-    final people = _responsibleOptions();
-    const statuses = ['ANDAMENTO', 'PENDENTE', 'CONCLUIDO', 'CANCELADO'];
+    final authState = ref.read(authControllerProvider);
+    final userRole = authState.user?.usuario?.cargo?.nome.toLowerCase() ?? '';
+    final isAdmin = authState.user?.isAdmin ?? false;
+    final isCoordenador = userRole.contains('coordenad') || isAdmin;
 
-    await showModalBottomSheet<void>(
+    if (!isCoordenador) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Edição de projeto via API não permitida para Gestores. Requer aprovação no painel web.'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          0,
-          20,
-          20 + MediaQuery.viewInsetsOf(context).bottom,
+      builder: (context) => ProjectFormSheet(project: _project),
+    );
+
+    if (result == true) {
+      final projectsState = ref.read(projectsControllerProvider);
+      final updated = projectsState.items.firstWhere(
+        (p) => p.id == _project.id,
+        orElse: () => _project,
+      );
+      setState(() {
+        _project = updated;
+      });
+    }
+  }
+
+  Future<void> _handleDelete() async {
+    final hasTasks = _project.metricas != null && _project.metricas!.tarefasTotal > 0;
+    if (hasTasks) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Finalize ou cancele o projeto para preservar o histórico.'),
+          backgroundColor: AppColors.danger,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Editar projeto',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 14),
-            DropdownMenu<String>(
-              controller: statusController,
-              width: double.infinity,
-              label: const Text('Estado'),
-              dropdownMenuEntries: statuses
-                  .map(
-                    (status) => DropdownMenuEntry(value: status, label: status),
-                  )
-                  .toList(),
-            ),
-            const SizedBox(height: 12),
-            if (people.isEmpty)
-              TextField(
-                controller: responsibleController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'ID do gestor/responsável',
-                  prefixIcon: Icon(Icons.manage_accounts_outlined),
-                ),
-              )
-            else
-              DropdownMenu<int>(
-                width: double.infinity,
-                label: const Text('Gestor/responsável'),
-                initialSelection: int.tryParse(responsibleController.text),
-                onSelected: (value) =>
-                    responsibleController.text = value?.toString() ?? '',
-                dropdownMenuEntries: people.entries
-                    .map(
-                      (entry) => DropdownMenuEntry(
-                        value: entry.key,
-                        label: entry.value,
-                      ),
-                    )
-                    .toList(),
-              ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () async {
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                } else {
-                  GoRouter.of(context).go('/');
-                }
-                await _saveProject(
-                  statusController.text.trim(),
-                  int.tryParse(responsibleController.text.trim()),
-                );
-              },
-              icon: const Icon(Icons.save_outlined),
-              label: const Text('Guardar alterações'),
-            ),
-          ],
-        ),
+      );
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar Projeto'),
+        content: const Text('Tem a certeza que deseja eliminar este projeto? Esta ação é irreversível.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
       ),
     );
-  }
 
-  Future<void> _saveProject(String status, int? responsavelId) async {
-    setState(() => _saving = true);
-    try {
-      final updated = await ref
-          .read(projectsControllerProvider.notifier)
-          .updateProject(
-            id: _project.id,
-            status: status,
-            responsavelId: responsavelId,
+    if (confirm == true) {
+      setState(() => _saving = true);
+      try {
+        await ref.read(projectsControllerProvider.notifier).deleteProject(_project.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Projeto eliminado com sucesso.')),
           );
-      setState(() => _project = updated);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Projeto atualizado com sucesso.')),
-        );
-      }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.toString())));
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
-  }
-
-  Map<int, String> _responsibleOptions() {
-    final options = <int, String>{};
-    final current = _project.responsavel;
-    if (current != null && current.id > 0) {
-      options[current.id] = current.nome;
-    }
-    for (final project in ref.read(projectsControllerProvider).items) {
-      final responsible = project.responsavel;
-      if (responsible != null && responsible.id > 0) {
-        options[responsible.id] = responsible.nome;
+          context.pop();
+        }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString())),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _saving = false);
       }
     }
-    for (final task in ref.read(tasksControllerProvider).items) {
-      final responsible = task.responsavel;
-      if (responsible != null && responsible.id > 0) {
-        options[responsible.id] = responsible.nome;
-      }
-    }
-    return options;
   }
 }
 

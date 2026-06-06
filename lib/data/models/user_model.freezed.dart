@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuthResponse {
 
- String get message; String get token;@JsonKey(name: 'token_type') String get tokenType; AppUser get user;
+ String? get message; String get token;@JsonKey(name: 'token_type') String get tokenType; AppUser get user;
 /// Create a copy of AuthResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $AuthResponseCopyWith<$Res>  {
   factory $AuthResponseCopyWith(AuthResponse value, $Res Function(AuthResponse) _then) = _$AuthResponseCopyWithImpl;
 @useResult
 $Res call({
- String message, String token,@JsonKey(name: 'token_type') String tokenType, AppUser user
+ String? message, String token,@JsonKey(name: 'token_type') String tokenType, AppUser user
 });
 
 
@@ -65,10 +65,10 @@ class _$AuthResponseCopyWithImpl<$Res>
 
 /// Create a copy of AuthResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? message = null,Object? token = null,Object? tokenType = null,Object? user = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? message = freezed,Object? token = null,Object? tokenType = null,Object? user = null,}) {
   return _then(_self.copyWith(
-message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,token: null == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
+message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String?,token: null == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
 as String,tokenType: null == tokenType ? _self.tokenType : tokenType // ignore: cast_nullable_to_non_nullable
 as String,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as AppUser,
@@ -165,7 +165,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String message,  String token, @JsonKey(name: 'token_type')  String tokenType,  AppUser user)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? message,  String token, @JsonKey(name: 'token_type')  String tokenType,  AppUser user)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthResponse() when $default != null:
 return $default(_that.message,_that.token,_that.tokenType,_that.user);case _:
@@ -186,7 +186,7 @@ return $default(_that.message,_that.token,_that.tokenType,_that.user);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String message,  String token, @JsonKey(name: 'token_type')  String tokenType,  AppUser user)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? message,  String token, @JsonKey(name: 'token_type')  String tokenType,  AppUser user)  $default,) {final _that = this;
 switch (_that) {
 case _AuthResponse():
 return $default(_that.message,_that.token,_that.tokenType,_that.user);case _:
@@ -206,7 +206,7 @@ return $default(_that.message,_that.token,_that.tokenType,_that.user);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String message,  String token, @JsonKey(name: 'token_type')  String tokenType,  AppUser user)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? message,  String token, @JsonKey(name: 'token_type')  String tokenType,  AppUser user)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthResponse() when $default != null:
 return $default(_that.message,_that.token,_that.tokenType,_that.user);case _:
@@ -221,10 +221,10 @@ return $default(_that.message,_that.token,_that.tokenType,_that.user);case _:
 @JsonSerializable()
 
 class _AuthResponse implements AuthResponse {
-  const _AuthResponse({required this.message, required this.token, @JsonKey(name: 'token_type') required this.tokenType, required this.user});
+  const _AuthResponse({this.message, required this.token, @JsonKey(name: 'token_type') required this.tokenType, required this.user});
   factory _AuthResponse.fromJson(Map<String, dynamic> json) => _$AuthResponseFromJson(json);
 
-@override final  String message;
+@override final  String? message;
 @override final  String token;
 @override@JsonKey(name: 'token_type') final  String tokenType;
 @override final  AppUser user;
@@ -262,7 +262,7 @@ abstract mixin class _$AuthResponseCopyWith<$Res> implements $AuthResponseCopyWi
   factory _$AuthResponseCopyWith(_AuthResponse value, $Res Function(_AuthResponse) _then) = __$AuthResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String message, String token,@JsonKey(name: 'token_type') String tokenType, AppUser user
+ String? message, String token,@JsonKey(name: 'token_type') String tokenType, AppUser user
 });
 
 
@@ -279,10 +279,10 @@ class __$AuthResponseCopyWithImpl<$Res>
 
 /// Create a copy of AuthResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? message = null,Object? token = null,Object? tokenType = null,Object? user = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? message = freezed,Object? token = null,Object? tokenType = null,Object? user = null,}) {
   return _then(_AuthResponse(
-message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,token: null == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
+message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String?,token: null == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
 as String,tokenType: null == tokenType ? _self.tokenType : tokenType // ignore: cast_nullable_to_non_nullable
 as String,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as AppUser,

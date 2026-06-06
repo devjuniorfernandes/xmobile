@@ -21,6 +21,9 @@ _Project _$ProjectFromJson(Map<String, dynamic> json) => _Project(
   metricas: json['metricas'] == null
       ? null
       : ProjectMetrics.fromJson(json['metricas'] as Map<String, dynamic>),
+  referencias: (json['referencias'] as List<dynamic>?)
+      ?.map((e) => ProjectReference.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$ProjectToJson(_Project instance) => <String, dynamic>{
@@ -34,6 +37,7 @@ Map<String, dynamic> _$ProjectToJson(_Project instance) => <String, dynamic>{
   'empresa': instance.empresa,
   'responsavel': instance.responsavel,
   'metricas': instance.metricas,
+  'referencias': instance.referencias,
 };
 
 _ProjectCompany _$ProjectCompanyFromJson(Map<String, dynamic> json) =>
@@ -71,4 +75,22 @@ Map<String, dynamic> _$ProjectMetricsToJson(_ProjectMetrics instance) =>
       'tarefas_total': instance.tarefasTotal,
       'tarefas_concluidas': instance.tarefasConcluidas,
       'tarefas_em_atraso': instance.tarefasEmAtraso,
+    };
+
+_ProjectReference _$ProjectReferenceFromJson(Map<String, dynamic> json) =>
+    _ProjectReference(
+      id: (json['id'] as num).toInt(),
+      titulo: json['titulo'] as String,
+      tipo: json['tipo'] as String,
+      url: json['url'] as String,
+      descricao: json['descricao'] as String?,
+    );
+
+Map<String, dynamic> _$ProjectReferenceToJson(_ProjectReference instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'titulo': instance.titulo,
+      'tipo': instance.tipo,
+      'url': instance.url,
+      'descricao': instance.descricao,
     };

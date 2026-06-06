@@ -34,7 +34,7 @@ class TaskCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  StatusBadge(label: task.status ?? 'Sem status'),
+                  StatusBadge(label: task.status?.nome ?? 'Sem status'),
                 ],
               ),
               const SizedBox(height: 10),
@@ -48,7 +48,7 @@ class TaskCard extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   StatusBadge(
-                    label: task.prioridade ?? 'Prioridade',
+                    label: task.prioridade?.nome ?? 'Prioridade',
                     color: AppColors.primary,
                   ),
                   if (task.entregueAtrasado)

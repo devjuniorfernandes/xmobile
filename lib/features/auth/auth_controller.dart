@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../shared/metadata_controller.dart';
 
 enum AuthStatus { checking, authenticated, unauthenticated }
 
@@ -40,15 +41,14 @@ class AuthController extends Notifier<AuthState> {
       return;
     }
 
-    // Try to restore user from repository (may be null if not set in memory)
-    var user = _repository.currentUser;
-    if (user == null) {
-      user = await _repository.restoreUserFromStorage();
-    }
+    final user = _repository.currentUser ?? await _repository.restoreUserFromStorage();
 
-    state = user != null
-        ? AuthState.authenticated(user)
-        : const AuthState.unauthenticated();
+    if (user != null) {
+      state = AuthState.authenticated(user);
+      ref.read(metadataControllerProvider.notifier).bootstrap();
+    } else {
+      state = const AuthState.unauthenticated();
+    }
   }
 
   Future<void> login(String email, String password) async {
@@ -56,6 +56,7 @@ class AuthController extends Notifier<AuthState> {
     try {
       final user = await _repository.login(email, password);
       state = AuthState.authenticated(user);
+      ref.read(metadataControllerProvider.notifier).bootstrap();
     } catch (error) {
       state = AuthState.unauthenticated(error: error.toString());
     }
@@ -63,6 +64,7 @@ class AuthController extends Notifier<AuthState> {
 
   Future<void> logout() async {
     await _repository.logout();
+    ref.read(metadataControllerProvider.notifier).clear();
     state = const AuthState.unauthenticated();
   }
 }

@@ -61,7 +61,7 @@ class ProjectsController extends Notifier<ProjectsState> {
     try {
       final response = await _repository.getProjects(
         page: 1,
-        search: state.search,
+        q: state.search,
       );
       state = state.copyWith(
         items: response.items,
@@ -80,7 +80,7 @@ class ProjectsController extends Notifier<ProjectsState> {
     try {
       final response = await _repository.getProjects(
         page: state.page + 1,
-        search: state.search,
+        q: state.search,
       );
       state = state.copyWith(
         items: [...state.items, ...response.items],
@@ -98,15 +98,49 @@ class ProjectsController extends Notifier<ProjectsState> {
     refresh();
   }
 
+  Future<Project> createProject({
+    required String nome,
+    required int empresaId,
+    required int usuarioId,
+    required String dataInicio,
+    String? dataPrazo,
+    String? descricao,
+    String? statusProjeto,
+  }) async {
+    final created = await _repository.createProject(
+      nome: nome,
+      empresaId: empresaId,
+      usuarioId: usuarioId,
+      dataInicio: dataInicio,
+      dataPrazo: dataPrazo,
+      descricao: descricao,
+      statusProjeto: statusProjeto,
+    );
+    state = state.copyWith(
+      items: [created, ...state.items],
+    );
+    return created;
+  }
+
   Future<Project> updateProject({
     required int id,
-    String? status,
-    int? responsavelId,
+    required String nome,
+    required int empresaId,
+    required int usuarioId,
+    required String dataInicio,
+    String? dataPrazo,
+    String? descricao,
+    String? statusProjeto,
   }) async {
     final updated = await _repository.updateProject(
       id: id,
-      status: status,
-      responsavelId: responsavelId,
+      nome: nome,
+      empresaId: empresaId,
+      usuarioId: usuarioId,
+      dataInicio: dataInicio,
+      dataPrazo: dataPrazo,
+      descricao: descricao,
+      statusProjeto: statusProjeto,
     );
     state = state.copyWith(
       items: state.items
@@ -114,5 +148,12 @@ class ProjectsController extends Notifier<ProjectsState> {
           .toList(),
     );
     return updated;
+  }
+
+  Future<void> deleteProject(int id) async {
+    await _repository.deleteProject(id);
+    state = state.copyWith(
+      items: state.items.where((project) => project.id != id).toList(),
+    );
   }
 }

@@ -7,7 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_skeleton.dart';
 import '../auth/auth_controller.dart';
+import '../projects/presentation/project_form_sheet.dart';
 import '../projects/presentation/projects_controller.dart';
+import '../tasks/presentation/task_form_sheet.dart';
 import '../tasks/presentation/tasks_controller.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -25,6 +27,15 @@ class DashboardPage extends ConsumerWidget {
     final user = auth.user;
     final userName = user?.name ?? 'Utilizador';
 
+    // RBAC: Check role permissions
+    final userRole = user?.usuario?.cargo?.nome.toLowerCase() ?? '';
+    final isAdmin = user?.isAdmin ?? false;
+    final isCoordenador = userRole.contains('coordenad') || isAdmin;
+    final isGestor = userRole.contains('gestor');
+
+    final canCreateProject = isCoordenador || isGestor;
+    final canCreateTask = isCoordenador || isGestor;
+
     // Calculate dashboard statistics
     final activeProjects = projectsState.items.where((p) {
       final status = (p.statusProjeto ?? '').toLowerCase();
@@ -38,7 +49,59 @@ class DashboardPage extends ConsumerWidget {
       return 'Boa noite';
     }
 
+    void showCreationDialog() {
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (context) {
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (canCreateProject)
+                  ListTile(
+                    leading: const Icon(Icons.folder_outlined, color: AppColors.pantone172C),
+                    title: const Text('Novo Projeto'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      showModalBottomSheet<bool>(
+                        context: context,
+                        isScrollControlled: true,
+                        showDragHandle: true,
+                        builder: (context) => const ProjectFormSheet(),
+                      );
+                    },
+                  ),
+                if (canCreateTask)
+                  ListTile(
+                    leading: const Icon(Icons.checklist_rtl_outlined, color: AppColors.pantone2955C),
+                    title: const Text('Nova Tarefa'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      showModalBottomSheet<bool>(
+                        context: context,
+                        isScrollControlled: true,
+                        showDragHandle: true,
+                        builder: (context) => const TaskFormSheet(),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+
     return Scaffold(
+      floatingActionButton: (canCreateProject || canCreateTask)
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.pantone172C,
+              onPressed: showCreationDialog,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('Novo', style: TextStyle(color: Colors.white)),
+            )
+          : null,
       body: loading
           ? const SafeArea(
               child: Padding(
@@ -520,7 +583,7 @@ class DashboardPage extends ConsumerWidget {
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
                                 final task = tasksState.items[index];
-                                final isTaskCompleted = (task.status ?? '')
+                                final isTaskCompleted = (task.status?.nome ?? '')
                                     .toLowerCase()
                                     .contains('concl');
 
@@ -626,14 +689,14 @@ class DashboardPage extends ConsumerWidget {
                                                     ),
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      task.prioridade!,
+                                                      task.prioridade!.nome,
                                                       style: GoogleFonts.roboto(
                                                         fontSize: 12,
                                                         fontWeight:
                                                             FontWeight.w600,
                                                         color:
                                                             _getPriorityColor(
-                                                              task.prioridade,
+                                                              task.prioridade?.nome,
                                                             ),
                                                       ),
                                                     ),

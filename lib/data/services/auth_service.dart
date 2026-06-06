@@ -22,13 +22,21 @@ class AuthService {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         ApiConstants.login,
-        data: FormData.fromMap({
+        data: {
           'email': email,
           'password': password,
           'device_name': AppConstants.deviceName,
-        }),
+        },
       );
       return AuthResponse.fromJson(response.data ?? {});
+    } catch (error) {
+      throw mapDioError(error);
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      await _dio.post<dynamic>('/logout');
     } catch (error) {
       throw mapDioError(error);
     }

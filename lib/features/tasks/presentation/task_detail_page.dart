@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/task_model.dart';
+import '../../auth/auth_controller.dart';
+import 'task_form_sheet.dart';
 import 'tasks_controller.dart';
 
 class TaskDetailPage extends ConsumerStatefulWidget {
@@ -29,6 +31,16 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = ref.watch(authControllerProvider);
+    final userRole = auth.user?.usuario?.cargo?.nome.toLowerCase() ?? '';
+    final isAdmin = auth.user?.isAdmin ?? false;
+    final isCoordenador = userRole.contains('coordenad') || isAdmin;
+    final isGestor = userRole.contains('gestor');
+
+    // Only Admin/Coordenador can delete tasks, and Gestor/Coordenador can edit
+    final canDelete = isCoordenador;
+    final canEdit = isCoordenador || isGestor;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -43,28 +55,41 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.ink,
-              child: IconButton(
-                onPressed: _saving ? null : _showEditSheet,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.ink,
-                          ),
-                        ),
-                      )
-                    : const Icon(Icons.edit_outlined),
+          if (canDelete)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.ink,
+                child: IconButton(
+                  onPressed: _saving ? null : _handleDelete,
+                  icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+                ),
               ),
             ),
-          ),
+          if (canEdit)
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.ink,
+                child: IconButton(
+                  onPressed: _saving ? null : _showEditSheet,
+                  icon: _saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.ink,
+                            ),
+                          ),
+                        )
+                      : const Icon(Icons.edit_outlined),
+                ),
+              ),
+            ),
         ],
       ),
       body: ListView(
@@ -133,11 +158,11 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _getPriorityBgColor(_task.prioridade),
+                          color: _getPriorityBgColor(_task.prioridade?.nome),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          _task.prioridade!,
+                          _task.prioridade!.nome,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -377,135 +402,65 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
   }
 
   Future<void> _showEditSheet() async {
-    final statusController = TextEditingController(text: _task.status ?? '');
-    final responsibleController = TextEditingController(
-      text: _task.responsavel?.id == 0
-          ? ''
-          : _task.responsavel?.id.toString() ?? '',
-    );
-    final people = _responsibleOptions();
-    const statuses = ['PENDENTE', 'ANDAMENTO', 'CONCLUIDA', 'CANCELADA'];
-
-    await showModalBottomSheet<void>(
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          0,
-          20,
-          20 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Editar tarefa',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 14),
-            DropdownMenu<String>(
-              controller: statusController,
-              width: double.infinity,
-              label: const Text('Estado'),
-              dropdownMenuEntries: statuses
-                  .map(
-                    (status) => DropdownMenuEntry(value: status, label: status),
-                  )
-                  .toList(),
-            ),
-            const SizedBox(height: 12),
-            if (people.isEmpty)
-              TextField(
-                controller: responsibleController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'ID do responsável',
-                  prefixIcon: Icon(Icons.person_add_alt_outlined),
-                ),
-              )
-            else
-              DropdownMenu<int>(
-                width: double.infinity,
-                label: const Text('Responsável'),
-                initialSelection: int.tryParse(responsibleController.text),
-                onSelected: (value) =>
-                    responsibleController.text = value?.toString() ?? '',
-                dropdownMenuEntries: people.entries
-                    .map(
-                      (entry) => DropdownMenuEntry(
-                        value: entry.key,
-                        label: entry.value,
-                      ),
-                    )
-                    .toList(),
-              ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () async {
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                } else {
-                  GoRouter.of(context).go('/');
-                }
-                await _saveTask(
-                  statusController.text.trim(),
-                  int.tryParse(responsibleController.text.trim()),
-                );
-              },
-              icon: const Icon(Icons.save_outlined),
-              label: const Text('Guardar alterações'),
-            ),
-          ],
-        ),
+      builder: (context) => TaskFormSheet(task: _task),
+    );
+
+    if (result == true) {
+      final tasksState = ref.read(tasksControllerProvider);
+      final updated = tasksState.items.firstWhere(
+        (t) => t.id == _task.id,
+        orElse: () => _task,
+      );
+      setState(() {
+        _task = updated;
+      });
+    }
+  }
+
+  Future<void> _handleDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar Tarefa'),
+        content: const Text('Tem a certeza que deseja eliminar esta tarefa? Esta ação é irreversível.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
       ),
     );
-  }
 
-  Future<void> _saveTask(String status, int? responsavelId) async {
-    setState(() => _saving = true);
-    try {
-      final updated = await ref
-          .read(tasksControllerProvider.notifier)
-          .updateTask(
-            id: _task.id,
-            status: status,
-            responsavelId: responsavelId,
+    if (confirm == true) {
+      setState(() => _saving = true);
+      try {
+        await ref.read(tasksControllerProvider.notifier).deleteTask(_task.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tarefa eliminada com sucesso.')),
           );
-      setState(() => _task = updated);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tarefa atualizada com sucesso.')),
-        );
-      }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.toString())));
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
-  }
-
-  Map<int, String> _responsibleOptions() {
-    final options = <int, String>{};
-    final current = _task.responsavel;
-    if (current != null && current.id > 0) {
-      options[current.id] = current.nome;
-    }
-    for (final task in ref.read(tasksControllerProvider).items) {
-      final responsible = task.responsavel;
-      if (responsible != null && responsible.id > 0) {
-        options[responsible.id] = responsible.nome;
+          context.pop();
+        }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString())),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _saving = false);
       }
     }
-    return options;
   }
 }
 

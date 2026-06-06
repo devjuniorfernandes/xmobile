@@ -15,20 +15,67 @@ class ProjectsRepository {
 
   Future<PaginatedResponse<Project>> getProjects({
     int page = 1,
-    String? search,
+    String? q,
+    String? statusProjeto,
+    int? empresaId,
+    int? responsavelId,
   }) {
-    return _service.fetchProjects(page: page, search: search);
+    return _service.fetchProjects(
+      page: page,
+      q: q,
+      statusProjeto: statusProjeto,
+      empresaId: empresaId,
+      responsavelId: responsavelId,
+    );
+  }
+
+  Future<Project> getProjectDetail(int id) {
+    return _service.fetchProjectDetail(id);
+  }
+
+  Future<Project> createProject({
+    required String nome,
+    required int empresaId,
+    required int usuarioId,
+    required String dataInicio,
+    String? dataPrazo,
+    String? descricao,
+    String? statusProjeto,
+  }) {
+    return _service.createProject(
+      nome: nome,
+      empresaId: empresaId,
+      usuarioId: usuarioId,
+      dataInicio: dataInicio,
+      dataPrazo: dataPrazo,
+      descricao: descricao,
+      statusProjeto: statusProjeto,
+    );
   }
 
   Future<Project> updateProject({
     required int id,
-    String? status,
-    int? responsavelId,
+    required String nome,
+    required int empresaId,
+    required int usuarioId,
+    required String dataInicio,
+    String? dataPrazo,
+    String? descricao,
+    String? statusProjeto,
   }) {
     return _service.updateProject(
       id: id,
-      status: status,
-      responsavelId: responsavelId,
+      nome: nome,
+      empresaId: empresaId,
+      usuarioId: usuarioId,
+      dataInicio: dataInicio,
+      dataPrazo: dataPrazo,
+      descricao: descricao,
+      statusProjeto: statusProjeto,
     );
+  }
+
+  Future<void> deleteProject(int id) {
+    return _service.deleteProject(id);
   }
 }

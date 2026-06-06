@@ -37,6 +37,11 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
+    try {
+      await _service.logout();
+    } catch (_) {
+      // Ignore network errors to guarantee local state is cleared
+    }
     _currentUser = null;
     await _storage.clear();
   }

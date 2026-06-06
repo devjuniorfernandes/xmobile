@@ -13,14 +13,23 @@ abstract class TaskItem with _$TaskItem {
     String? descricao,
     @JsonKey(name: 'data_prazo') String? dataPrazo,
     @JsonKey(name: 'data_conclusao') String? dataConclusao,
+    @JsonKey(name: 'data_entrega_real') String? dataEntregaReal,
     @JsonKey(name: 'entregue_atrasado', fromJson: _boolFromJson)
     @Default(false)
     bool entregueAtrasado,
+    @JsonKey(name: 'total_retrabalho') @Default(0) int totalRetrabalho,
+    @JsonKey(name: 'foi_retrabalho', fromJson: _boolFromJson)
+    @Default(false)
+    bool foiRetrabalho,
+    @JsonKey(name: 'nota_execucao') String? notaExecucao,
+    @JsonKey(name: 'aprovada_sem_retrabalho', fromJson: _boolFromJson)
+    @Default(false)
+    bool aprovadaSemRetrabalho,
     @JsonKey(fromJson: _entityFromJson) NamedEntity? projeto,
     @JsonKey(fromJson: _entityFromJson) NamedEntity? departamento,
     @JsonKey(fromJson: _entityFromJson) NamedEntity? responsavel,
-    @JsonKey(fromJson: _labelFromJson) String? status,
-    @JsonKey(fromJson: _labelFromJson) String? prioridade,
+    @JsonKey(fromJson: _entityFromJson) NamedEntity? status,
+    @JsonKey(fromJson: _entityFromJson) NamedEntity? prioridade,
   }) = _TaskItem;
 
   factory TaskItem.fromJson(Map<String, dynamic> json) =>
@@ -34,16 +43,6 @@ bool _boolFromJson(Object? value) {
     return value == '1' || value.toLowerCase() == 'true';
   }
   return false;
-}
-
-String? _labelFromJson(Object? value) {
-  if (value == null) return null;
-  if (value is String) return value;
-  if (value is Map<String, dynamic>) {
-    return (value['nome'] ?? value['name'] ?? value['titulo'] ?? value['label'])
-        ?.toString();
-  }
-  return value.toString();
 }
 
 NamedEntity? _entityFromJson(Object? value) {

@@ -11,7 +11,6 @@ final projectTasksProvider =
       final response = await repository.getTasks(
         page: 1,
         projetoId: query.projectId,
-        projeto: query.projectName,
       );
       return response.items
           .where(

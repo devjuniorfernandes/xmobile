@@ -17,14 +17,21 @@ class ProjectsService {
 
   Future<PaginatedResponse<Project>> fetchProjects({
     int page = 1,
-    String? search,
+    String? q,
+    String? statusProjeto,
+    int? empresaId,
+    int? responsavelId,
   }) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiConstants.projects,
         queryParameters: {
           'page': page,
-          if (search != null && search.isNotEmpty) 'search': search,
+          if (q != null && q.isNotEmpty) 'q': q,
+          if (statusProjeto != null && statusProjeto.isNotEmpty)
+            'status_projeto': statusProjeto,
+          'empresa_id':? empresaId,
+          'responsavel_id':? responsavelId,
         },
       );
       return PaginatedResponse.fromLaravel(
@@ -36,27 +43,88 @@ class ProjectsService {
     }
   }
 
-  Future<Project> updateProject({
-    required int id,
-    String? status,
-    int? responsavelId,
-  }) async {
+  Future<Project> fetchProjectDetail(int id) async {
     try {
-      final payload = <String, dynamic>{};
-      if (status != null && status.isNotEmpty) {
-        payload['status_projeto'] = status;
-      }
-      if (responsavelId != null) {
-        payload['responsavel_id'] = responsavelId;
-      }
-      final response = await _dio.patch<Map<String, dynamic>>(
+      final response = await _dio.get<Map<String, dynamic>>(
         '${ApiConstants.projects}/$id',
-        data: payload,
       );
       final data = response.data?['data'] is Map<String, dynamic>
           ? response.data!['data'] as Map<String, dynamic>
           : response.data ?? {};
       return Project.fromJson(data);
+    } catch (error) {
+      throw mapDioError(error);
+    }
+  }
+
+  Future<Project> createProject({
+    required String nome,
+    required int empresaId,
+    required int usuarioId,
+    required String dataInicio,
+    String? dataPrazo,
+    String? descricao,
+    String? statusProjeto,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiConstants.projects,
+        data: {
+          'nome': nome,
+          'empresa_id': empresaId,
+          'usuario_id': usuarioId,
+          'data_inicio': dataInicio,
+          if (dataPrazo != null && dataPrazo.isNotEmpty) 'data_prazo': dataPrazo,
+          if (descricao != null && descricao.isNotEmpty) 'descricao': descricao,
+          if (statusProjeto != null && statusProjeto.isNotEmpty)
+            'status_projeto': statusProjeto,
+        },
+      );
+      final data = response.data?['data'] is Map<String, dynamic>
+          ? response.data!['data'] as Map<String, dynamic>
+          : response.data ?? {};
+      return Project.fromJson(data);
+    } catch (error) {
+      throw mapDioError(error);
+    }
+  }
+
+  Future<Project> updateProject({
+    required int id,
+    required String nome,
+    required int empresaId,
+    required int usuarioId,
+    required String dataInicio,
+    String? dataPrazo,
+    String? descricao,
+    String? statusProjeto,
+  }) async {
+    try {
+      final response = await _dio.put<Map<String, dynamic>>(
+        '${ApiConstants.projects}/$id',
+        data: {
+          'nome': nome,
+          'empresa_id': empresaId,
+          'usuario_id': usuarioId,
+          'data_inicio': dataInicio,
+          if (dataPrazo != null && dataPrazo.isNotEmpty) 'data_prazo': dataPrazo,
+          if (descricao != null && descricao.isNotEmpty) 'descricao': descricao,
+          if (statusProjeto != null && statusProjeto.isNotEmpty)
+            'status_projeto': statusProjeto,
+        },
+      );
+      final data = response.data?['data'] is Map<String, dynamic>
+          ? response.data!['data'] as Map<String, dynamic>
+          : response.data ?? {};
+      return Project.fromJson(data);
+    } catch (error) {
+      throw mapDioError(error);
+    }
+  }
+
+  Future<void> deleteProject(int id) async {
+    try {
+      await _dio.delete<dynamic>('${ApiConstants.projects}/$id');
     } catch (error) {
       throw mapDioError(error);
     }

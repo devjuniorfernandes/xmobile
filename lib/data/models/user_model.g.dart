@@ -8,7 +8,7 @@ part of 'user_model.dart';
 
 _AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) =>
     _AuthResponse(
-      message: json['message'] as String,
+      message: json['message'] as String?,
       token: json['token'] as String,
       tokenType: json['token_type'] as String,
       user: AppUser.fromJson(json['user'] as Map<String, dynamic>),

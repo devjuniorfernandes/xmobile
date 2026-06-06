@@ -88,7 +88,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Data: ${DateFormat.yMd().format(date)}'),
+                    child: Text(
+                      'Data: ${DateFormat.yMd('pt_BR').format(date)}',
+                    ),
                   ),
                   TextButton(
                     onPressed: () async {
@@ -171,8 +173,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
               } else {
-                // If there's no page to pop, navigate to root to avoid go_router assertion
-                GoRouter.of(context).go('/');
+                GoRouter.of(context).go('/profile');
               }
               _loadTasks();
             },
@@ -209,7 +210,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Data: ${DateFormat.yMd().format(date)}'),
+                    child: Text(
+                      'Data: ${DateFormat.yMd('pt_BR').format(date)}',
+                    ),
                   ),
                   TextButton(
                     onPressed: () async {
@@ -286,7 +289,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
               await TasksDatabase.instance.update(task);
               if (!mounted) return;
-              Navigator.of(context).pop();
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                GoRouter.of(context).go('/profile');
+              }
               _loadTasks();
             },
             child: const Text('Salvar'),
@@ -368,7 +375,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: Text(
-                    DateFormat.yMMMM().format(selectedDate),
+                    DateFormat.yMMMM('pt_BR').format(selectedDate),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -403,7 +410,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      DateFormat.E().format(day),
+                                      DateFormat.E('pt_BR').format(day),
                                       style: TextStyle(
                                         color: isSelected
                                             ? Colors.white
@@ -462,7 +469,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     children: [
                       if (t.timeMillis != null)
                         Text(
-                          DateFormat.Hm().format(
+                          DateFormat.Hm('pt_BR').format(
                             DateTime.fromMillisecondsSinceEpoch(t.timeMillis!),
                           ),
                         ),

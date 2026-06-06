@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_state.dart';
 import '../../../core/widgets/app_skeleton.dart';
+import '../../auth/auth_controller.dart';
 import 'project_card.dart';
+import 'project_form_sheet.dart';
 import 'projects_controller.dart';
 
 class ProjectsPage extends ConsumerStatefulWidget {
@@ -38,9 +40,28 @@ class _ProjectsPageState extends ConsumerState<ProjectsPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(projectsControllerProvider);
     final controller = ref.read(projectsControllerProvider.notifier);
+    final authState = ref.watch(authControllerProvider);
+
+    final userRole = authState.user?.usuario?.cargo?.nome.toLowerCase() ?? '';
+    final isAdmin = authState.user?.isAdmin ?? false;
+    final canCreate = userRole.contains('coordenad') || userRole.contains('gestor') || isAdmin;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Projetos')),
+      floatingActionButton: canCreate
+          ? FloatingActionButton(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              onPressed: () {
+                showModalBottomSheet<bool>(
+                  context: context,
+                  isScrollControlled: true,
+                  showDragHandle: true,
+                  builder: (context) => const ProjectFormSheet(),
+                );
+              },
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       body: Column(
         children: [
           Padding(

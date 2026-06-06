@@ -15,35 +15,79 @@ class TasksRepository {
 
   Future<PaginatedResponse<TaskItem>> getTasks({
     int page = 1,
-    String? search,
-    String? status,
-    String? prioridade,
-    String? departamento,
-    String? projeto,
+    String? q,
+    int? statusId,
+    int? prioridadeId,
+    int? departamentoId,
     int? projetoId,
-    String? responsavel,
+    int? responsavelId,
   }) {
     return _service.fetchTasks(
       page: page,
-      search: search,
-      status: status,
-      prioridade: prioridade,
-      departamento: departamento,
-      projeto: projeto,
+      q: q,
+      statusId: statusId,
+      prioridadeId: prioridadeId,
+      departamentoId: departamentoId,
       projetoId: projetoId,
-      responsavel: responsavel,
+      responsavelId: responsavelId,
+    );
+  }
+
+  Future<TaskItem> getTaskDetail(int id) {
+    return _service.fetchTaskDetail(id);
+  }
+
+  Future<TaskItem> createTask({
+    required String titulo,
+    required String descricao,
+    required int departamentoId,
+    required int prioridadeId,
+    int? projetoId,
+    int? usuarioId,
+    int? statusId,
+    String? dataPrazo,
+    String? dataConclusao,
+  }) {
+    return _service.createTask(
+      titulo: titulo,
+      descricao: descricao,
+      departamentoId: departamentoId,
+      prioridadeId: prioridadeId,
+      projetoId: projetoId,
+      usuarioId: usuarioId,
+      statusId: statusId,
+      dataPrazo: dataPrazo,
+      dataConclusao: dataConclusao,
     );
   }
 
   Future<TaskItem> updateTask({
     required int id,
-    String? status,
-    int? responsavelId,
+    required String titulo,
+    required String descricao,
+    required int departamentoId,
+    required int prioridadeId,
+    int? projetoId,
+    int? usuarioId,
+    int? statusId,
+    String? dataPrazo,
+    String? dataConclusao,
   }) {
     return _service.updateTask(
       id: id,
-      status: status,
-      responsavelId: responsavelId,
+      titulo: titulo,
+      descricao: descricao,
+      departamentoId: departamentoId,
+      prioridadeId: prioridadeId,
+      projetoId: projetoId,
+      usuarioId: usuarioId,
+      statusId: statusId,
+      dataPrazo: dataPrazo,
+      dataConclusao: dataConclusao,
     );
+  }
+
+  Future<void> deleteTask(int id) {
+    return _service.deleteTask(id);
   }
 }

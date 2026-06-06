@@ -6,7 +6,7 @@ part 'user_model.g.dart';
 @freezed
 abstract class AuthResponse with _$AuthResponse {
   const factory AuthResponse({
-    required String message,
+    String? message,
     required String token,
     @JsonKey(name: 'token_type') required String tokenType,
     required AppUser user,
