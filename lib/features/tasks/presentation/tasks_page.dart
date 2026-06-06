@@ -202,7 +202,11 @@ class _TasksPageState extends ConsumerState<TasksPage> {
                   projeto: projeto.text.trim(),
                   responsavel: responsavel.text.trim(),
                 );
-                Navigator.of(context).pop();
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  GoRouter.of(context).go('/');
+                }
               },
               icon: const Icon(Icons.check),
               label: const Text('Aplicar filtros'),

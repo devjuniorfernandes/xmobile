@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -222,7 +223,9 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withAlpha(
+                                (0.15 * 255).round(),
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -323,10 +326,10 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.danger.withOpacity(0.08),
+                      color: AppColors.danger.withAlpha((0.08 * 255).round()),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.danger.withOpacity(0.2),
+                        color: AppColors.danger.withAlpha((0.2 * 255).round()),
                       ),
                     ),
                     child: Row(
@@ -444,7 +447,11 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: () async {
-                Navigator.of(context).pop();
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  GoRouter.of(context).go('/');
+                }
                 await _saveTask(
                   statusController.text.trim(),
                   int.tryParse(responsibleController.text.trim()),
@@ -535,7 +542,9 @@ class _SubTaskItemCard extends StatelessWidget {
           if (avatarInitials != null)
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppColors.pantone2955C.withOpacity(0.1),
+              backgroundColor: AppColors.pantone2955C.withAlpha(
+                (0.1 * 255).round(),
+              ),
               foregroundColor: AppColors.pantone2955C,
               child: Text(
                 avatarInitials!,
@@ -549,7 +558,7 @@ class _SubTaskItemCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.pantone1505C.withOpacity(0.1),
+                color: AppColors.pantone1505C.withAlpha((0.1 * 255).round()),
                 shape: BoxShape.circle,
               ),
               child: Icon(iconData, color: AppColors.pantone1505C, size: 18),
@@ -558,7 +567,7 @@ class _SubTaskItemCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.muted.withOpacity(0.1),
+                color: AppColors.muted.withAlpha((0.1 * 255).round()),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -602,7 +611,7 @@ class _SubTaskItemCard extends StatelessWidget {
               border: Border.all(
                 color: isCompleted
                     ? AppColors.success
-                    : AppColors.muted.withOpacity(0.3),
+                    : AppColors.muted.withAlpha((0.3 * 255).round()),
                 width: 2,
               ),
               color: isCompleted ? AppColors.success : Colors.transparent,

@@ -44,7 +44,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.pantone1505C.withOpacity(isDark ? 0.15 : 0.25),
+                    AppColors.pantone1505C.withAlpha(
+                      ((isDark ? 0.15 : 0.25) * 255).round(),
+                    ),
                     Colors.transparent,
                   ],
                 ),
@@ -61,7 +63,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.pantone2955C.withOpacity(isDark ? 0.15 : 0.2),
+                    AppColors.pantone2955C.withAlpha(
+                      ((isDark ? 0.15 : 0.2) * 255).round(),
+                    ),
                     Colors.transparent,
                   ],
                 ),
@@ -166,10 +170,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: AppColors.danger.withOpacity(0.08),
+                                  color: AppColors.danger.withAlpha(
+                                    (0.08 * 255).round(),
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: AppColors.danger.withOpacity(0.3),
+                                    color: AppColors.danger.withAlpha(
+                                      (0.3 * 255).round(),
+                                    ),
                                   ),
                                 ),
                                 child: Text(

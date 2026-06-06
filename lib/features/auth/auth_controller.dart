@@ -35,8 +35,19 @@ class AuthController extends Notifier<AuthState> {
 
   Future<void> _restoreSession() async {
     final hasSession = await _repository.hasSession();
-    state = hasSession
-        ? AuthState.authenticated(_repository.currentUser)
+    if (!hasSession) {
+      state = const AuthState.unauthenticated();
+      return;
+    }
+
+    // Try to restore user from repository (may be null if not set in memory)
+    var user = _repository.currentUser;
+    if (user == null) {
+      user = await _repository.restoreUserFromStorage();
+    }
+
+    state = user != null
+        ? AuthState.authenticated(user)
         : const AuthState.unauthenticated();
   }
 

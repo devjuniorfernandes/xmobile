@@ -138,7 +138,9 @@ class DashboardPage extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.pantone172C.withOpacity(0.2),
+                                  color: AppColors.pantone172C.withAlpha(
+                                    (0.2 * 255).round(),
+                                  ),
                                   blurRadius: 15,
                                   offset: const Offset(0, 6),
                                 ),
@@ -183,7 +185,9 @@ class DashboardPage extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withAlpha(
+                                      (0.2 * 255).round(),
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -292,7 +296,7 @@ class DashboardPage extends ConsumerWidget {
                                             (isPrimary
                                                     ? AppColors.pantone2955C
                                                     : const Color(0xFF0D9488))
-                                                .withOpacity(0.2),
+                                                .withAlpha((0.2 * 255).round()),
                                         blurRadius: 10,
                                         offset: const Offset(0, 4),
                                       ),
@@ -358,7 +362,7 @@ class DashboardPage extends ConsumerWidget {
                                             value: progress,
                                             minHeight: 6,
                                             backgroundColor: Colors.white
-                                                .withOpacity(0.2),
+                                                .withAlpha((0.2 * 255).round()),
                                             valueColor:
                                                 const AlwaysStoppedAnimation<
                                                   Color
@@ -546,8 +550,8 @@ class DashboardPage extends ConsumerWidget {
                                             border: Border.all(
                                               color: isTaskCompleted
                                                   ? AppColors.success
-                                                  : AppColors.muted.withOpacity(
-                                                      0.4,
+                                                  : AppColors.muted.withAlpha(
+                                                      (0.4 * 255).round(),
                                                     ),
                                               width: 2,
                                             ),
@@ -594,7 +598,11 @@ class DashboardPage extends ConsumerWidget {
                                                           'Sem Projeto',
                                                       style: GoogleFonts.roboto(
                                                         fontSize: 12,
-                                                        color: AppColors.muted,
+                                                        color: AppColors.muted
+                                                            .withAlpha(
+                                                              (0.6 * 255)
+                                                                  .round(),
+                                                            ),
                                                       ),
                                                       overflow:
                                                           TextOverflow.ellipsis,
@@ -610,7 +618,10 @@ class DashboardPage extends ConsumerWidget {
                                                       decoration: BoxDecoration(
                                                         shape: BoxShape.circle,
                                                         color: AppColors.muted
-                                                            .withOpacity(0.6),
+                                                            .withAlpha(
+                                                              (0.6 * 255)
+                                                                  .round(),
+                                                            ),
                                                       ),
                                                     ),
                                                     const SizedBox(width: 8),
@@ -695,7 +706,7 @@ class _CircularIconButton extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withAlpha((0.03 * 255).round()),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),

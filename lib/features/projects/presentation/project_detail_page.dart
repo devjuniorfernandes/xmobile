@@ -361,7 +361,11 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: () async {
-                Navigator.of(context).pop();
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  GoRouter.of(context).go('/');
+                }
                 await _saveProject(
                   statusController.text.trim(),
                   int.tryParse(responsibleController.text.trim()),
